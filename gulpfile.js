@@ -1,6 +1,26 @@
-// Packages required
-var gulp = require('gulp'),
-	cache = require('gulp-cached'); // to only process files that have changed
+// General purpose
+var gulp = require('gulp');
+var cache = require('gulp-cached'); // to only process files that have changed
+var sourcemaps   = require('gulp-sourcemaps'); // to have nice debugging in developper tools even after minification
+var rename = require('gulp-rename');
+var del = require('del');
+var cp = require('glob-cp');
+
+// Images
+var webp = require('imagemin-webp');
+var imagemin = require('gulp-imagemin');
+
+// CSS
+var postcss      = require('gulp-postcss');
+var autoprefixer = require('autoprefixer');
+var cssnano = require('cssnano');
+
+// HTML
+var googlecdn = require('gulp-google-cdn');
+var htmlmin = require('gulp-htmlmin');
+
+// JS
+var uglify = require('gulp-uglify');
 
 
 // Folder structure
@@ -23,7 +43,6 @@ console.log('hello');
 
 // .webp generation and compression
 gulp.task('webp', function () {
-	var webp = require('imagemin-webp');
 	return gulp.src(imgOr + '*.{jpg,jpeg,png}')
 		.pipe(cache('webp-cache'))
 		.pipe(webp()())
@@ -32,8 +51,7 @@ gulp.task('webp', function () {
 
 // Image compression
 gulp.task('imagemin', function () {
-	var imagemin = require('gulp-imagemin'),
-		options = {
+	var options = {
 			optimizationLevel: 5, // .png
 			progressive: true // .jpg
 		};
@@ -43,34 +61,33 @@ gulp.task('imagemin', function () {
 		.pipe(gulp.dest(imgSrc));
 });
 
-gulp.task('cssmin', function () {
-	var cssmin = require('gulp-cssmin'),
-		autoprefixer = require('gulp-autoprefixer'),
-		rename = require('gulp-rename'),
-		autoprefixerOptions = {
-            browsers: ['> 5%'],
-            cascade: false
-        };
-    gulp.src([cssSrc + '*.css', '!' + cssSrc + '*min.css'])
-    	.cache('cssmin-cache')
-    	.pipe(autoprefixer(options))
-        .pipe(cssmin())
+gulp.task('css', function () {
+	var autoprefixerOptions = {
+			browsers: ['> 5%'],
+			cascade: false
+		};
+    return gulp.src([cssSrc + '*.css', '!' + cssSrc + '*min.css'])
+    	.pipe(cache('css-cache'))
+        .pipe(sourcemaps.init())
+        .pipe(postcss([ autoprefixer(autoprefixerOptions), cssnano() ]))
         .pipe(rename({suffix: '.min'}))
+        .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest(cssSrc));
 });
+// Merge css files for dist? See gulp-concat
 
 // Replaces script references with Google CDN ones (when using bower)
-gulp.task('googlecdn', function () {
-	var googlecdn = require('gulp-google-cdn');
-    return gulp.src('index.html')
-        .pipe(googlecdn(require('./bower.json')))
-        .pipe(gulp.dest('src'));
-});
+// gulp.task('googlecdn', function () {
+//     return gulp.src('./src/index.html')
+//         .pipe(googlecdn(require('./src/bower.json')))
+//         .pipe(rename({suffix: '.test'}))
+//         .pipe(gulp.dest('src'));
+// });
 
 // Watcher
 gulp.task('watch', function () {
-	gulp.watch(imgOr, ['webp', 'imagemin']);
-	gulp.watch(cssSrc, 'cssmin');
+	gulp.watch(imgOr + '*.{jpg,jpeg,png}', ['webp', 'imagemin']);
+	gulp.watch([cssSrc + '*.css', '!' + cssSrc + '*min.css'], ['css']);
 });
 
 
@@ -79,21 +96,18 @@ gulp.task('watch', function () {
 // ==================
 
 gulp.task('cleanDist', function () {
-	var del = require('del');
 	return del([imgDist]);
 });
 
 // populateDist wait that cleanDist finishes
 gulp.task('populateDist', ['cleanDist'], function () {
-	var cp = require('glob-cp'),
-		options = {recursive: true};
+	var options = { recursive: true };
 	cp(imgSrc, imgDist, options);
 	cp(cssSrc, cssDist, options);
 });
 
 gulp.task('htmlmin', function () {
-	var htmlmin = require('gulp-htmlmin'),
-		options = {
+	var options = {
 			removeComments: true,
 			removeCommentsFromCDATA: true,
 			collapseWhitespace: true,
@@ -108,7 +122,6 @@ gulp.task('htmlmin', function () {
 });
 
 gulp.task('uglify', function () {
-	var uglify = require('gulp-uglify');
 	return gulp.src(jsSrc + '**/*.js')
 		.pipe(uglify())
 		.pipe(gulp.dest('dist/js/'));
@@ -122,7 +135,7 @@ gulp.task('default', function () {
 	console.log('This is the only thing I do :)');
 });
 
-gulp.task('athome', ['webp', 'imagemin', 'cssmin', 'googlecdn', 'watch']);
+gulp.task('athome', ['webp', 'imagemin', 'css', 'watch']);
 
 // Careful! Order has no importance, tasks run asynchronously by default
 gulp.task('readytolaunch', ['cleanDist', 'populateDist', 'htmlmin', 'uglify']);

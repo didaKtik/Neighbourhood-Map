@@ -1,0 +1,22 @@
+{
+  "name": "NeighbourhoodMap",
+  "description": "Single page application featuring a map of my neighborhood",
+  "main": "gulpfile.js",
+  "authors": [
+    "Pierre Mohr Durdez"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/didaKtik/Neighbourhood-Map",
+  "moduleType": [],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "knockout": "~3.4.0"
+  }
+}

@@ -1,0 +1,2 @@
+@media (min-width:500px){.projects div:nth-of-type(n){text-align:center}}@media (min-width:500px) and (max-width:767px){.project-tile{width:50%}}@media (min-width:768px){.banner,.header,.projects{font-size:1rem}.logo{margin:0}.project-tile{border-bottom:0}}
+/*# sourceMappingURL=responsive.min.css.map */
