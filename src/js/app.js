@@ -80,12 +80,6 @@ app.MapModule = function () {
 		map.panTo(position);
 	};
 
-	// Contrary to the ones defined on #map,
-	// these clicks are not triggered when clicking on a gorilla
-	map.addListener('click', function () {
-		app.viewModel.closeAllOverlays();
-	});
-
 	return map;
 };
 
@@ -96,7 +90,6 @@ app.Location = function (locationDetails) {
 	this.webpUrl = 'img/webp/' + this.name.toLowerCase().replace(/ /g,"-") + '.webp';
 	this.position = locationDetails.geometry.location;
 	this.overlays = new app.Overlays(this);
-	this.isVisible = ko.observable(true);
 
 	app.map.updateBoundsWithPosition(this.position);
 };
@@ -149,7 +142,7 @@ app.Overlays.prototype.createInfoWindow = function (location) {
 
 	var $infoWindowHtml = $(app.infoWindowTemplate(location));
 
-	var baseUrl = 'https://en.wikipedia.org/w/api.php?actio=opensearch&search=',
+	var baseUrl = 'https://en.wikipedia.org/w/api.php?action=opensearch&search=',
 		requestUrl = baseUrl + location.name + '&format=json';
 
 	$.ajax({
@@ -205,20 +198,25 @@ app.ViewModel = function () {
 	var self = this;
 
 	this.locations = [];
+
 	this.matchingLocations = ko.observableArray();
 
+	this.currentLocation = ko.observable();
+
+
+	/* SEARCH UI */
 	// Is the search bar visible ?
 	this.searchBar = ko.observable(true);
 
 	var initialMessage = 'Search places I like in Rwanda';
 	this.searchString = ko.observable(initialMessage);
 
-	// Control list view visibility
+	// Is the list view visible ?
 	this.isSearching = ko.pureComputed(function () {
 		return self.searchString() == initialMessage ? false : true;
 	});
 
-	// Click: hamburger button
+	// On #hamburger click
 	this.toggleSearch = function () {
 		if (!this.searchBar()) {
 			this.searchBar(true);
@@ -227,30 +225,26 @@ app.ViewModel = function () {
 		}
 	};
 
+	// Hide search bar and list view
+	// On #map click
 	this.hide = function () {
 		// this will trigger isSearching = false and thus hide list view
 		this.searchString(initialMessage);
 		// Hide search bar
 		this.searchBar(false);
-		this.showAllMarkers();
-	};
-
-	this.showAllMarkers = function () {
-		this.locations.forEach(function (location) {
-			location.overlays.marker.setVisible(true);
-		});
+		// Overlays are all visible
+		this.allMarkersVisible(true);
 	};
 
 	this.onSearchBarClick = function () {
 		this.searchString('');
 	};
 
-	// The anonymous function passed is triggered each time the searchString is
+	// The anonymous function passed is called each time searchString is
 	//   modified
 	this.searchString.subscribe(function (searchString) {
 		if (searchString == self.initialMessage || searchString == '') {
-			self.showAllMarkers();
-
+			self.allMarkersVisible(true);
 			self.matchingLocations(self.locations);
 
 		} else {
@@ -278,12 +272,25 @@ app.ViewModel = function () {
 		this.overlays.open();
 	};
 
-	// Used when the map is clicked
+	// MAP INTERACTIONS
+	// Contrary to the ones defined on #map,
+	//   these clicks are not triggered when clicking on a gorilla
+	app.map.addListener('click', function () {
+		this.closeAllOverlays();
+	});
+
 	this.closeAllOverlays = function () {
 		this.locations.forEach(function (location) {
 			location.overlays.close();
 		});
 	}
+
+	// UTILITY
+	this.allMarkersVisible = function (boolean) {
+		this.locations.forEach(function (location) {
+			location.overlays.marker.setVisible(boolean);
+		});
+	};
 };
 
 
