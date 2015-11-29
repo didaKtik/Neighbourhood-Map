@@ -9,25 +9,72 @@ Bright yellow: #FAD201;
 Darker yellow: #E5BE01;
 */
 
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Map */
+#map {
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Info Window */
+.infowindow {
+  max-width: 280px;
+}
+
+.infowindow-name {
+  display: block;
+  text-align: center;
+  font-weight: bold;
+  color: #20603D;
+  margin: 0 0 6px 0;
+}
+
+.no-url {
+  text-decoration: none;
+  color: #20603D;
+}
+
+.no-url:hover {
+     cursor: unset;
+}
+
+.infowindow-img {
+  display: block;
+  width: 120px;
+  margin: 0px 6px 0 0;
+  float: left;
+}
+
+.infowindow-description {
+  margin: -2px 0 0 0;
+}
+
 /* Menu */
 #menu {
-  position: absolute;
-  top: 5vh;
-  left: 5vw;
-  width: 90vw;
+  position: fixed;
+  top: 3vh;
+  left: 50vw;
+  width: 300px;
+  margin-left: -150px;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 /* Hamburger */
 #hamburger {
-  width: 20px;
-  height: 21px;
+  width: 30px;
+  height: 35px;
+  background-color: #FAD201;
+  border-radius: 4px;
 }
 
 .hamburger-icon {
-  position: relative;
-  top: 4px;
-  left: 3px;
+  margin: 11px 8px;
   width: 14px;
   height: 3px;
   background: #00A1DE;
@@ -38,9 +85,49 @@ Darker yellow: #E5BE01;
 
 /* Search bar */
 #search-bar {
-  height: 21px;
-  width: calc(90vw - 20px);
-  border: 2px solid #FAD201;
+  height: 35px;
+  width: 270px;
   color: #bbb;
+  /* 16px disables auto-zoom on iPhone input */
+  font-size: 16px;
+  border: initial;
+  text-align: center;
+  border: 2px solid #FAD201;
+  border-radius: 4px;
+}
+
+#search-bar:focus {
+  color: black;
+  outline-color: #20603d;
+  outline-style: dashed;
+  outline-width: medium;
+  text-align: left;
+}
+
+/* List view */
+#list-view {
+  position: relative;
+  background: white;
+  overflow: scroll;
+  max-height: 70vh;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  border-right: 2px solid #FAD201;
+  border-bottom: 2px solid #FAD201;
+  border-left: 2px solid #FAD201;
+  padding: 3px;
+}
+
+.list-item-name {
+  text-align: center;
   font-weight: bold;
+  font-size: small;
+  width: 124px;
+}
+
+.list-item-img {
+  width: 120px;
 }
