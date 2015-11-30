@@ -9,14 +9,14 @@
 	<link rel="stylesheet" href="css/responsive.min.css" media="min-width: 480px">
 </head>
 <body>
-	<div id="map" data-bind="click: hide"></div>
+	<div id="map" data-bind="click: onMapClick"></div>
 	<div id="menu">
-		<div id="hamburger" data-bind="click: toggleSearch">
+		<div id="hamburger" data-bind="click: onHamburgerClick">
 			<div class="hamburger-icon"></div>
 		</div>
-		<input type="text" id="search-bar" data-bind="visible: searchBar, hasFocus: isSearching, textInput: searchString, click: onSearchBarClick"></input>
-		<div id="list-view" data-bind="visible: isSearching, foreach: matchingLocations">
-			<div class="list-item" data-bind="click: $parent.onLocationClick">
+		<input type="text" id="search-bar" data-bind="visible: searchBarVisible, textInput: searchString, click: onSearchBarClick"></input>
+		<div id="list-view" data-bind="visible: listViewVisible, foreach: matchingLocations">
+			<div class="list-item" data-bind="click: $parent.onListItemClicked">
 				<picture>
 					<source type="image/webp" data-bind="attr: {srcset: webpUrl}">
 						<img class="list-item-img" data-bind="attr: {src: url}">

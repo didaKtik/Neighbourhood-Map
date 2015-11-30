@@ -16,22 +16,23 @@ app.initialize = function () {
 		yellow: '#FAD201'
 	};
 
-	app.map = app.MapModule();
-
-	var service = new google.maps.places.PlacesService(app.map);
-
 	var locationNames = [
 		'Kivu lake', 'Gisenyi', 'Kigali',
 		'Ruhengeri', 'Kigarama', 'Butare', 'Kibungo',
 		'Kinazi', 'Nyungwe Forest'
 	];
 
-	locationNames.forEach(function (locationName) {
-		queryLocationDetails(locationName);
-	});
+	app.map = app.MapModule();
 
 	app.viewModel = new app.ViewModel();
 	ko.applyBindings(app.viewModel);
+
+	// Location details are queried via Google TextSearch
+	var service = new google.maps.places.PlacesService(app.map);
+
+	locationNames.forEach(function (locationName) {
+		queryLocationDetails(locationName);
+	});
 
 	function queryLocationDetails (locationName) {
 		var request = { query: locationName };
@@ -103,7 +104,7 @@ app.Overlays = function (location) {
 		animation: google.maps.Animation.DROP
 	});
 
-	this.marker.addListener('click', this.toggle.bind(this));
+	this.marker.addListener('click', app.viewModel.onMarkerClick.bind(location));
 
 	this.createInfoWindow(location);
 }
@@ -112,29 +113,19 @@ app.Overlays.prototype.toggle = function () {
 	if (this.marker.getAnimation() !== null) {
 		this.close();
 	} else {
+		app.viewModel.closeAllOverlays();
 		this.open();
 	}
-}
+};
 
 app.Overlays.prototype.close = function () {
-	if (this.marker.getAnimation() !== null) {
-		this.marker.setAnimation(null);
-		this.infowindow.close();
-	}
+	this.marker.setAnimation(null);
+	this.infowindow.close();
 };
 
 app.Overlays.prototype.open = function () {
-	this.closeAllOthers();
 	this.marker.setAnimation(google.maps.Animation.BOUNCE);
 	this.infowindow.open(app.map, this.marker);
-};
-
-app.Overlays.prototype.closeAllOthers = function () {
-	app.viewModel.locations.forEach(function (location) {
-		if (location.overlays != this) {
-			location.overlays.close();
-		}
-	}.bind(this));
 };
 
 app.Overlays.prototype.createInfoWindow = function (location) {
@@ -201,51 +192,78 @@ app.ViewModel = function () {
 
 	this.matchingLocations = ko.observableArray();
 
-	this.currentLocation = ko.observable();
 
-
-	/* SEARCH UI */
-	// Is the search bar visible ?
-	this.searchBar = ko.observable(true);
-
-	var initialMessage = 'Search places I like in Rwanda';
-	this.searchString = ko.observable(initialMessage);
-
-	// Is the list view visible ?
-	this.isSearching = ko.pureComputed(function () {
-		return self.searchString() == initialMessage ? false : true;
-	});
-
-	// On #hamburger click
-	this.toggleSearch = function () {
-		if (!this.searchBar()) {
-			this.searchBar(true);
-		} else {
-			this.hide();
-		}
-	};
-
-	// Hide search bar and list view
-	// On #map click
-	this.hide = function () {
-		// this will trigger isSearching = false and thus hide list view
-		this.searchString(initialMessage);
-		// Hide search bar
-		this.searchBar(false);
-		// Overlays are all visible
-		this.allMarkersVisible(true);
+	/*  CLICK HANDLERS */
+	this.onHamburgerClick = function () {
+		this.searchBarVisible(!this.searchBarVisible());
 	};
 
 	this.onSearchBarClick = function () {
-		this.searchString('');
+		this.listViewVisible(true);
 	};
 
-	// The anonymous function passed is called each time searchString is
-	//   modified
+
+	this.onListItemClicked = function () {
+		self.searchBarVisible(false);
+		app.map.panToPosition(this.position);
+		self.selectedLocation(this);
+	};
+
+	this.onMarkerClick = function () {
+		// this refers to the clicked location
+		self.selectedLocation(this);
+	};
+
+	// These clicks are also triggered when clicking on a gorilla
+	this.onMapClick = function () {
+		this.searchBarVisible(false);
+	};
+
+	// These clicks are not triggered when clicking on a gorilla
+	app.map.addListener('click', function () {
+		self.selectedLocation(null);
+	});
+
+
+	/* STATE DEPENDENCIES */
+	this.searchBarVisible = ko.observable(true);
+	this.searchBarVisible.subscribe(function (searchBarVisible) {
+		// Additional events when the search bar disappears
+		if (!searchBarVisible) {
+			self.listViewVisible(false);
+			self.searchString(initialMessage);
+		}
+	});
+
+	this.listViewVisible = ko.observable(false);
+	this.listViewVisible.subscribe(function (listViewVisible) {
+		// Additional events when the list view appears
+		if (listViewVisible) {
+			self.searchString('');
+			self.selectedLocation(null);
+		}
+	});
+
+	var initialMessage = 'Search places I like in Rwanda';
+	this.searchString = ko.observable(initialMessage);
 	this.searchString.subscribe(function (searchString) {
-		if (searchString == self.initialMessage || searchString == '') {
-			self.allMarkersVisible(true);
-			self.matchingLocations(self.locations);
+		self.setMatchingLocations(searchString);
+	});
+
+	this.selectedLocation = ko.observable();
+	this.selectedLocation.subscribe(function (selectedLocation) {
+		if (selectedLocation) {
+			selectedLocation.overlays.toggle();
+		} else {
+			self.closeAllOverlays();
+		}
+	});
+
+
+	/* UTILITY FUNCTIONS */
+	this.setMatchingLocations = function (searchString) {
+		if (searchString == '' || searchString == initialMessage) {
+			self.allLocationsMatch();
 
 		} else {
 			var searchString = searchString.toLowerCase().trim();
@@ -262,33 +280,18 @@ app.ViewModel = function () {
 
 			self.matchingLocations(matchingLocations);
 		}
-	});
-
-	// One item of the list view was clicked
-	this.onLocationClick = function () {
-		// this in this context refers to the clicked location
-		self.hide();
-		app.map.panToPosition(this.overlays.marker.getPosition());
-		this.overlays.open();
 	};
 
-	// MAP INTERACTIONS
-	// Contrary to the ones defined on #map,
-	//   these clicks are not triggered when clicking on a gorilla
-	app.map.addListener('click', function () {
-		this.closeAllOverlays();
-	});
+	this.allLocationsMatch = function () {
+		this.locations.forEach(function (location) {
+			location.overlays.marker.setVisible(true);
+		});
+		this.matchingLocations(this.locations);
+	};
 
 	this.closeAllOverlays = function () {
 		this.locations.forEach(function (location) {
-			location.overlays.close();
-		});
-	}
-
-	// UTILITY
-	this.allMarkersVisible = function (boolean) {
-		this.locations.forEach(function (location) {
-			location.overlays.marker.setVisible(boolean);
+			console.log('I was called');
 		});
 	};
 };
