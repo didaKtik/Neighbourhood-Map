@@ -9,14 +9,24 @@
 	<link rel="stylesheet" href="css/responsive.min.css" media="min-width: 480px">
 </head>
 <body>
-	<div id="map" data-bind="click: onMapClick"></div>
+	<div id="map" data-bind="click: hide"></div>
 	<div id="menu">
-		<div id="hamburger" data-bind="click: onHamburgerClick">
+		<div id="hamburger" data-bind="click: toggleSearchBar">
 			<div class="hamburger-icon"></div>
 		</div>
-		<input type="text" id="search-bar" data-bind="visible: searchBarVisible, textInput: searchString, click: onSearchBarClick"></input>
-		<div id="list-view" data-bind="visible: listViewVisible, foreach: matchingLocations">
-			<div class="list-item" data-bind="click: $parent.onListItemClicked">
+		<input type="text" id="search-bar" data-bind="
+			visible: searchBarVisible,
+			textInput: searchString,
+			click: search,
+			escapeKey: toggleSearchBar,
+			enterKey: panToAndOpen,
+			downArrow: highlightNext,
+			upArrow: highlightPrevious"></input>
+
+		<!-- <input class="edit" data-bind="value: title, valueUpdate: 'afterkeydown', enterKey: $root.saveEditing, escapeKey: $root.cancelEditing, selectAndFocus: editing, event: { blur: $root.saveEditing }"> -->
+
+		<div id="list-view" data-bind="visible: searching, foreach: matchingLocations">
+			<div class="list-item" data-bind="click: $root.panToAndOpen, event: { mouseenter: $root.highlight }, css: {highlighted: highlighted}">
 				<picture>
 					<source type="image/webp" data-bind="attr: {srcset: webpUrl}">
 						<img class="list-item-img" data-bind="attr: {src: url}">

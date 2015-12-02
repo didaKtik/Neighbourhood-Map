@@ -3,10 +3,9 @@
 }
 
 /* Colors
-Blue: #00A1DE;
+Blue: #00A1DE  // rgb(0,161,222)
 Green: #20603D;
-Bright yellow: #FAD201;
-Darker yellow: #E5BE01;
+Yellow: #FAD201 // rgb(250,210,1)
 */
 
 html, body {
@@ -109,7 +108,7 @@ html, body {
   position: relative;
   background: white;
   overflow: scroll;
-  max-height: 70vh;
+  max-height: 85vh;
 }
 
 .list-item {
@@ -119,6 +118,10 @@ html, body {
   border-bottom: 2px solid #FAD201;
   border-left: 2px solid #FAD201;
   padding: 3px;
+}
+
+.highlighted {
+  background-color: rgba(250,210,1,0.6);
 }
 
 .list-item-name {

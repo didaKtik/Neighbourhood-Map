@@ -1,9 +1,49 @@
 // global ko, google.maps, $, _
 'use strict';
 
-jQuery.fn.outerHtml = function () {
-	return jQuery('<div />').append(this.eq(0).clone()).html();
-};
+(function() {
+	jQuery.fn.outerHtml = function () {
+		return jQuery('<div />').append(this.eq(0).clone()).html();
+	};
+
+	/* Binding handlers taken from the TODOMVC project: http://todomvc.com/ */
+	var ENTER_KEY = 13;
+	var ESCAPE_KEY = 27;
+	var UP_ARROW = 38;
+	var DOWN_ARROW = 40;
+
+	// A factory function we can use to create binding handlers for specific
+	// keycodes.
+	function keyhandlerBindingFactory(keyCode) {
+		return {
+			init: function (element, valueAccessor, allBindingsAccessor, data, bindingContext) {
+				var wrappedHandler, newValueAccessor;
+
+				// wrap the handler with a check for the enter key
+				wrappedHandler = function (data, event) {
+					if (event.keyCode === keyCode) {
+						valueAccessor().call(this, data, event);
+					}
+				};
+
+				// create a valueAccessor with the options that we would want to pass to the event binding
+				newValueAccessor = function () {
+					return {
+						keyup: wrappedHandler
+					};
+				};
+
+				// call the real event binding's init function
+				ko.bindingHandlers.event.init(element, newValueAccessor, allBindingsAccessor, data, bindingContext);
+			}
+		};
+	}
+
+	ko.bindingHandlers.enterKey = keyhandlerBindingFactory(ENTER_KEY);
+	ko.bindingHandlers.escapeKey = keyhandlerBindingFactory(ESCAPE_KEY);
+	ko.bindingHandlers.upArrow = keyhandlerBindingFactory(UP_ARROW);
+	ko.bindingHandlers.downArrow = keyhandlerBindingFactory(DOWN_ARROW);
+}());
 
 var app = {};
 
@@ -81,6 +121,11 @@ app.MapModule = function () {
 		map.panTo(position);
 	};
 
+	// These clicks are not triggered when clicking on a gorilla
+	map.addListener('click', function () {
+		app.viewModel.closeAllOverlays();
+	});
+
 	return map;
 };
 
@@ -91,6 +136,7 @@ app.Location = function (locationDetails) {
 	this.webpUrl = 'img/webp/' + this.name.toLowerCase().replace(/ /g,"-") + '.webp';
 	this.position = locationDetails.geometry.location;
 	this.overlays = new app.Overlays(this);
+	this.highlighted = ko.observable(false);
 
 	app.map.updateBoundsWithPosition(this.position);
 };
@@ -104,7 +150,7 @@ app.Overlays = function (location) {
 		animation: google.maps.Animation.DROP
 	});
 
-	this.marker.addListener('click', app.viewModel.onMarkerClick.bind(location));
+	this.marker.addListener('click', app.viewModel.openLocation.bind(this, location));
 
 	this.createInfoWindow(location);
 }
@@ -119,8 +165,10 @@ app.Overlays.prototype.toggle = function () {
 };
 
 app.Overlays.prototype.close = function () {
-	this.marker.setAnimation(null);
-	this.infowindow.close();
+	if (this.marker.getAnimation() !== null) {
+		this.marker.setAnimation(null);
+		this.infowindow.close();
+	}
 };
 
 app.Overlays.prototype.open = function () {
@@ -190,86 +238,31 @@ app.ViewModel = function () {
 
 	this.locations = [];
 
-	this.matchingLocations = ko.observableArray();
-
-
-	/*  CLICK HANDLERS */
-	this.onHamburgerClick = function () {
-		this.searchBarVisible(!this.searchBarVisible());
-	};
-
-	this.onSearchBarClick = function () {
-		this.listViewVisible(true);
-	};
-
-
-	this.onListItemClicked = function () {
-		self.searchBarVisible(false);
-		app.map.panToPosition(this.position);
-		self.selectedLocation(this);
-	};
-
-	this.onMarkerClick = function () {
-		// this refers to the clicked location
-		self.selectedLocation(this);
-	};
-
-	// These clicks are also triggered when clicking on a gorilla
-	this.onMapClick = function () {
-		this.searchBarVisible(false);
-	};
-
-	// These clicks are not triggered when clicking on a gorilla
-	app.map.addListener('click', function () {
-		self.selectedLocation(null);
-	});
-
-
-	/* STATE DEPENDENCIES */
 	this.searchBarVisible = ko.observable(true);
-	this.searchBarVisible.subscribe(function (searchBarVisible) {
-		// Additional events when the search bar disappears
-		if (!searchBarVisible) {
-			self.listViewVisible(false);
-			self.searchString(initialMessage);
-		}
-	});
 
-	this.listViewVisible = ko.observable(false);
-	this.listViewVisible.subscribe(function (listViewVisible) {
-		// Additional events when the list view appears
-		if (listViewVisible) {
-			self.searchString('');
-			self.selectedLocation(null);
-		}
-	});
+	this.searching = ko.observable(false);
 
 	var initialMessage = 'Search places I like in Rwanda';
 	this.searchString = ko.observable(initialMessage);
-	this.searchString.subscribe(function (searchString) {
-		self.setMatchingLocations(searchString);
-	});
 
-	this.selectedLocation = ko.observable();
-	this.selectedLocation.subscribe(function (selectedLocation) {
-		if (selectedLocation) {
-			selectedLocation.overlays.toggle();
+	this.matchingLocations = ko.computed(function () {
+		var searchString = this.searchString(),
+			searching = this.searching();
+		if (searchString == '' || !searching) {
+			this.locations.forEach(function (location) {
+				location.overlays.marker.setVisible(true);
+			});
+
+			if (this.locations.length > 0) {
+				this.highlight(this.locations[0]);
+			}
+
+			return this.locations;
 		} else {
-			self.closeAllOverlays();
-		}
-	});
-
-
-	/* UTILITY FUNCTIONS */
-	this.setMatchingLocations = function (searchString) {
-		if (searchString == '' || searchString == initialMessage) {
-			self.allLocationsMatch();
-
-		} else {
-			var searchString = searchString.toLowerCase().trim();
+			searchString = searchString.toLowerCase().trim();
 
 			// More advanced functionalities here
-			var matchingLocations = self.locations.filter(function (location) {
+			var matchingLocations = this.locations.filter(function (location) {
 				var regex = new RegExp('.*' + searchString + '.*'),
 					matching = regex.test(location.name.toLowerCase());
 
@@ -278,22 +271,90 @@ app.ViewModel = function () {
 				return matching;
 			});
 
-			self.matchingLocations(matchingLocations);
+			if (matchingLocations.length > 0) {
+				this.highlight(matchingLocations[0])
+			}
+
+			return matchingLocations;
+		}
+	}.bind(this));
+
+	this.highlightedLocation = ko.computed(function() {
+		var matchingLocations = this.matchingLocations();
+		for (var i=0, len=matchingLocations.length; i<len; i++) {
+			if (matchingLocations[i].highlighted()) {
+				return matchingLocations[i];
+			}
+		}
+	}.bind(this));
+
+	/*  CLICK HANDLERS */
+	this.toggleSearchBar = function () {
+		var searchBarVisible = this.searchBarVisible();
+		if (searchBarVisible) {
+			this.hide();
+		} else {
+			this.searchString(initialMessage);
+			this.searchBarVisible(true);
 		}
 	};
 
-	this.allLocationsMatch = function () {
-		this.locations.forEach(function (location) {
-			location.overlays.marker.setVisible(true);
-		});
-		this.matchingLocations(this.locations);
+	this.hide = function () {
+		this.searching(false);
+		this.searchBarVisible(false);
+		this.searchString('');
+	};
+
+	this.search = function () {
+		this.searching(true);
+		this.searchString('');
+		this.closeAllOverlays();
 	};
 
 	this.closeAllOverlays = function () {
 		this.locations.forEach(function (location) {
-			console.log('I was called');
+			location.overlays.close();
 		});
 	};
+
+	this.highlight = function (location) {
+		this.locations.forEach(function (location) {
+			location.highlighted(false);
+		});
+		location.highlighted(true);
+	}.bind(this);
+
+	this.highlightNext = function () {
+		var matchingLocations = this.matchingLocations();
+		for (var i=0, len=matchingLocations.length - 1; i<len; i++) {
+			if (matchingLocations[i].highlighted()) {
+				this.highlight(matchingLocations[i+1]);
+				break;
+			}
+		}
+	};
+
+	this.highlightPrevious = function () {
+		var matchingLocations = this.matchingLocations();
+		for (var i=1, len=matchingLocations.length; i<len; i++) {
+			if (matchingLocations[i].highlighted()) {
+				this.highlight(matchingLocations[i-1]);
+				break;
+			}
+		}
+	};
+
+	this.panToAndOpen = function () {
+		var location = this.highlightedLocation();
+		this.openLocation(location);
+		app.map.panToPosition(location.position);
+		this.hide();
+	}.bind(this);
+
+	this.openLocation = function (location) {
+		location.overlays.toggle();
+	};
+
 };
 
 
