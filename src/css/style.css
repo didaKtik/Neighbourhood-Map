@@ -4,13 +4,52 @@
 
 /* Colors
 Blue: #00A1DE  // rgb(0,161,222)
-Green: #20603D;
 Yellow: #FAD201 // rgb(250,210,1)
+Green: #20603D;
 */
 
 html, body {
   margin: 0;
   padding: 0;
+}
+
+/* While Loading */
+.bar {
+  position: fixed;
+  top: 45vh;
+  width: 30px;
+  height: 4px;
+  margin-left: -15px;
+}
+
+#blueBar {
+  background-color: #00A1DE;
+  left: calc(50vw - 35px);
+}
+
+#yellowBar {
+  background-color: #FAD201;
+  left: 50vw;
+}
+
+#greenBar {
+  background-color: #20603D;
+  left: calc(50vw + 35px);
+}
+
+.loading {
+  animation-name: rotate;
+  animation-duration: 1.5s;
+  animation-iteration-count: infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Map */
