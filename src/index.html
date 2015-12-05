@@ -26,8 +26,6 @@
 			downArrow: highlightNext,
 			upArrow: highlightPrevious"></input>
 
-		<!-- <input class="edit" data-bind="value: title, valueUpdate: 'afterkeydown', enterKey: $root.saveEditing, escapeKey: $root.cancelEditing, selectAndFocus: editing, event: { blur: $root.saveEditing }"> -->
-
 		<div id="list-view" data-bind="visible: searching, foreach: matchingLocations">
 			<div class="list-item" data-bind="click: $root.panToAndOpen, event: { mouseenter: $root.highlight }, css: {highlighted: highlighted}">
 				<picture>
@@ -41,7 +39,7 @@
 	</div>
 	<script type="text/template" id="infowindow-template">
 		<div class="infowindow">
-			<a href="" class="infowindow-name"><%= name %></a>
+			<a class="infowindow-name" target="_blank"><%= name %></a>
 			<picture>
 				<source srcset=<%= webpUrl %> type="image/webp">
 					<img class="infowindow-img" src=<%= url %>>

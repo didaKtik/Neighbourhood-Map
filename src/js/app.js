@@ -65,10 +65,13 @@ app.initialize = function () {
 	app.map = app.MapModule();
 
 	app.viewModel = new app.ViewModel();
+
 	app.locationsTreated = ko.observable(0);
+
 	app.viewModel.ready = ko.computed(function () {
 		return app.locationsTreated() == app.locationNames.length;
 	});
+
 	ko.applyBindings(app.viewModel);
 
 	// Location details are queried via Google TextSearch
@@ -146,7 +149,6 @@ app.Location = function (locationDetails) {
 
 	app.map.updateBoundsWithPosition(this.position);
 
-	console.log('A location is creating');
 };
 
 
@@ -182,6 +184,11 @@ app.Overlays.prototype.close = function () {
 app.Overlays.prototype.open = function () {
 	this.marker.setAnimation(google.maps.Animation.BOUNCE);
 	this.infowindow.open(app.map, this.marker);
+	$(".infowindow-name").click(function () {
+		if (this.href) {
+			window.open(this.href);
+		}
+	});
 };
 
 app.Overlays.prototype.createInfoWindow = function (location) {
@@ -238,8 +245,6 @@ app.Overlays.prototype.createInfoWindow = function (location) {
 		});
 
 		app.locationsTreated(app.locationsTreated() + 1);
-
-		console.log('An info window was created');
 	}
 };
 
@@ -366,16 +371,6 @@ app.ViewModel = function () {
 	this.openLocation = function (location) {
 		location.overlays.toggle();
 	};
-
-	// internal computed observable that fires whenever anything changes in our todos
-	ko.computed(function () {
-		// store a clean copy to local storage, which also creates a dependency on
-		// the observableArray and all observables in each item
-		localStorage.setItem('todos-knockoutjs', ko.toJSON(this.todos));
-	}.bind(this)).extend({
-		rateLimit: { timeout: 500, method: 'notifyWhenChangesStop' }
-	}); // save at most twice per second
-
 };
 
 

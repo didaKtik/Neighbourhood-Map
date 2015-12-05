@@ -16,10 +16,11 @@ html, body {
 /* While Loading */
 .bar {
   position: fixed;
-  top: 45vh;
+  top: 40vh;
   width: 30px;
   height: 4px;
   margin-left: -15px;
+  z-index: 1;
 }
 
 #blueBar {
