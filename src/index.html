@@ -13,38 +13,39 @@
 	<div id="yellowBar" class="loading bar" data-bind="visible: !ready()"></div>
 	<div id="greenBar" class="loading bar" data-bind="visible: !ready()"></div>
 	<div id="map" data-bind="click: hide"></div>
-	<div id="menu" style="display: none" data-bind="visible: ready">
-		<div id="hamburger" data-bind="click: toggleSearchBar">
-			<div class="hamburger-icon"></div>
+	<div style="display: none" data-bind="visible: ready">
+		<div class="hamburger-container" data-bind="visible: !addVM.active(), click: searchVM.onButtonClick">
+			<div class="icon hamburger-icon"></div>
 		</div>
-		<input type="text" id="search-bar" data-bind="
-			visible: searchBarVisible,
-			textInput: searchString,
-			click: search,
-			escapeKey: toggleSearchBar,
-			enterKey: panToAndOpen,
-			downArrow: highlightNext,
-			upArrow: highlightPrevious"></input>
-
-		<div id="list-view" data-bind="visible: searching, foreach: matchingLocations">
-			<div class="list-item" data-bind="click: $root.panToAndOpen, event: { mouseenter: $root.highlight }, css: {highlighted: highlighted}">
-				<picture>
-					<source type="image/webp" data-bind="attr: {srcset: webpUrl}">
-						<img class="list-item-img" data-bind="attr: {src: url}">
-					</source>
-				</picture>
-				<div class="list-item-name" data-bind="text: name"></div>
+		<input type="text" class="input-bar" data-bind="
+			visible: searchVM.bar() || addVM.bar(),
+			textInput: inputText,
+			click: click,
+			escapeKey: hide,
+			enterKey: onEnterKey,
+			downArrow: onDownArrow,
+			upArrow: onUpArrow,
+			style: {borderColor: searchVM.bar() ? app.colors.blue : app.colors.green},
+			css: {messaging: messaging}">
+		</input>
+		<div class="plus-container" data-bind="visible: !searchVM.active(), click: addVM.onButtonClick">
+			<div class="plus-horizontal-bar" data-bind="visible: !addVM.active()"></div>
+			<div class="plus-vertical-bar" data-bind="visible: !addVM.active()"></div>
+			<div class="button-text" data-bind="visible: addVM.active()">Add</div>
+		</div>
+		<div data-bind="with: searchVM">
+			<div id="list-view" data-bind="visible: active, foreach: matchingLocations">
+				<div class="list-item" data-bind="click: $parent.panToAndOpen, event: { mouseenter: $parent.highlight }, css: {highlighted: highlighted}">
+					<img class="list-item-img" data-bind="visible: isHardcoded, attr: {src: url}">
+					<div class="list-item-name" data-bind="text: name"></div>
+				</div>
 			</div>
 		</div>
 	</div>
 	<script type="text/template" id="infowindow-template">
 		<div class="infowindow">
 			<a class="infowindow-name" target="_blank"><%= name %></a>
-			<picture>
-				<source srcset=<%= webpUrl %> type="image/webp">
-					<img class="infowindow-img" src=<%= url %>>
-				</source>
-			</picture>
+				<img class="infowindow-img" src=<%= url %>>
 			<div class="infowindow-description"></div>
 		</div>
 	</script>
