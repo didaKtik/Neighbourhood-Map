@@ -1,4 +1,5 @@
 node_modules/
 src/img-original
+src/img/*
 src/bower_components
 **/.DS_Store

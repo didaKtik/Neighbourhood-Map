@@ -19,6 +19,7 @@
 		</div>
 		<input type="text" class="input-bar" data-bind="
 			visible: searchVM.bar() || addVM.bar(),
+			keepFocus: searchVM.active() || addVM.active(),
 			textInput: inputText,
 			click: click,
 			escapeKey: hide,
@@ -34,6 +35,10 @@
 			<div class="button-text" data-bind="visible: addVM.active()">Add</div>
 		</div>
 		<div data-bind="with: searchVM">
+			<div id="filters" data-bind="visible: active() && userLocations().length">
+				<div class="filter" data-bind="click: filterGorillas, css: {selected: showMode() == 'hardcoded'}">Gorillas</div>
+				<div class="filter" data-bind="click: filterSugarCanes, css: {selected: showMode() == 'user'}">Sugar Canes</div>
+			</div>
 			<div id="list-view" data-bind="visible: active, foreach: matchingLocations">
 				<div class="list-item" data-bind="click: $parent.panToAndOpen, event: { mouseenter: $parent.highlight }, css: {highlighted: highlighted}">
 					<img class="list-item-img" data-bind="visible: isHardcoded, attr: {src: url}">
@@ -43,16 +48,18 @@
 		</div>
 	</div>
 	<script type="text/template" id="infowindow-template">
-		<div class="infowindow">
-			<a class="infowindow-name" target="_blank"><%= name %></a>
-				<img class="infowindow-img" src=<%= url %>>
-			<div class="infowindow-description"></div>
+		<div>
+			<a class="infowindow-name"><%= name %></a>
+			<img class="infowindow-img" src=<%= url %>>
+			<span class="wiki-description"></span>
+			<a class="wiki-link">Wikipedia</a>
 		</div>
 	</script>
 	<script src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
 	<script src="bower_components/jquery/dist/jquery.min.js"></script>
 	<script src="bower_components/underscore/underscore-min.js"></script>
 	<script src="bower_components/knockout/dist/knockout.js"></script>
+	<script src="js/uglified.js"></script>
 	<script src="js/app.js"></script>
 </body>
 </html>
