@@ -97,7 +97,7 @@ gulp.task('js', function() {
   return gulp.src([jsSrc + '**/*.js', '!' + jsSrc + 'app.js', '!' + jsSrc + 'uglified.js'])
   	.pipe(sourcemaps.init())
     	.pipe(concat('uglified.js'))
-    	// .pipe(uglify())
+    	.pipe(uglify())
     .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest(jsSrc));
 });
