@@ -68,7 +68,8 @@ app.ViewModelLocation.prototype.buildMarker = function () {
 		animation: google.maps.Animation.DROP
 	});
 
-	this.marker.addListener('click', function () {
+	var clickEvent = app.isMobile ? 'mousedown' : 'click';
+	this.marker.addListener(clickEvent, function () {
 		app.viewModel.hide();
 		this.toggle();
 	}.bind(this));

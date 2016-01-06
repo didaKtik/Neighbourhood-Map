@@ -31,4 +31,7 @@ var app = app || {};
 			app.userLocations.treated(locationsTreated + 1);
 		}
 	};
+
+	app.isMobile = window.matchMedia("only screen and (max-width: 760px)").matches;
+
 })();

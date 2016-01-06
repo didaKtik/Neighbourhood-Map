@@ -11,6 +11,7 @@ app.mapModule = function () {
 		center: rwanda,
 		zoom: 9,
 		disableDefaultUI: true,
+		zoomControl: true,
 		styles: [
 			{
 				"featureType": "road.highway",
@@ -40,7 +41,8 @@ app.mapModule = function () {
 	};
 
 	// These clicks are not triggered when clicking on a gorilla
-	map.addListener('click', function () {
+	var clickEvent = app.isMobile ? 'mousedown' : 'click';
+	map.addListener(clickEvent, function () {
 		app.viewModel.closeAll();
 	});
 
