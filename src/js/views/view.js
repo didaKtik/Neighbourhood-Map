@@ -22,14 +22,14 @@ app.ViewModel = function () {
 
 	this.message = function (message, duration, callback) {
 		var duration = duration || 1500;
-		var callback = callback || function() {}
+		var callback = callback || function() {};
 		this.messaging(true);
 		this.inputText(message);
 		window.setTimeout(function() {
 			this.inputText('');
 			this.messaging(false);
 			callback();
-		}.bind(this), duration)
+		}.bind(this), duration);
 	};
 
 	this.click = function () {

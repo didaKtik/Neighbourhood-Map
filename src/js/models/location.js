@@ -70,8 +70,8 @@ app.ViewModelLocation.prototype.buildMarker = function () {
 
 	this.marker.addListener('click', function () {
 		app.viewModel.hide();
-		this.toggle()
-	}.bind(this))
+		this.toggle();
+	}.bind(this));
 };
 
 app.ViewModelLocation.prototype.queryWikipedia = function () {
@@ -81,10 +81,9 @@ app.ViewModelLocation.prototype.queryWikipedia = function () {
 	$.ajax({
 		url: requestUrl,
 		dataType: "jsonp",
-		jsonp: "callback",
-		success: onSuccess.bind(this),
-		error: onError.bind(this)
-	});
+		jsonp: "callback"
+	}).done(onSuccess.bind(this))
+	.fail(onError.bind(this));
 
 	function onSuccess (response) {
 		var description = response[2][0],
@@ -93,7 +92,7 @@ app.ViewModelLocation.prototype.queryWikipedia = function () {
 		var wikipediaData = {
 			description: description,
 			url: url
-		}
+		};
 
 		this.setInfoWindow(wikipediaData);
 		if (!app.viewModel.ready())
@@ -116,9 +115,12 @@ app.ViewModelLocation.prototype.setInfoWindow = function (wikipediaData) {
 		$infoWindowHtml.children('img').remove();
 	}
 
+	var description,
+		url;
+
 	if (wikipediaData) {
-		var description = wikipediaData.description,
-			url = wikipediaData.url;
+		description = wikipediaData.description;
+		url = wikipediaData.url;
 	}
 
 	// In case the wikipedia page obtained is a disambiguation page (containing 'may refer'),

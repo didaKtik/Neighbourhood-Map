@@ -33,7 +33,7 @@ app.SearchViewModel = function (viewModel) {
 		var bar = this.bar(),
 			inputText = this.inputText(),
 			messaging = this.messaging();
-		return bar && !(inputText == searchMessage) && !messaging;
+		return bar && inputText != searchMessage && !messaging;
 	}.bind(this));
 
 	// Toggle search bar
@@ -75,11 +75,11 @@ app.SearchViewModel = function (viewModel) {
 		if (!active) {
 			// All locations are visible
 			locations.forEach(function (location) {
-				location.marker.setVisible(true)
+				location.marker.setVisible(true);
 			});
 			return locations;
 
-		} else if (inputText == '') {
+		} else if (inputText === '') {
 			// Only sugar canes or gorillas are visible
 			locations.forEach(function (location) {
 				location.marker.setVisible(false)
@@ -105,7 +105,7 @@ app.SearchViewModel = function (viewModel) {
 				return matching;
 			});
 			if (matchingLocations.length) {
-				this.highlight(matchingLocations[0])
+				this.highlight(matchingLocations[0]);
 			}
 			return matchingLocations;
 		}
@@ -160,4 +160,4 @@ app.SearchViewModel = function (viewModel) {
 			}
 		}
 	}.bind(this));
-}
+};

@@ -91,4 +91,4 @@ app.adderModule = function () {
 		addUserLocations: queryLocationsOneByOne,
 		addNewLocation: queryNewLocation
 	};
-}
+};

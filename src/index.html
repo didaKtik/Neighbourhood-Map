@@ -6,7 +6,6 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<title>Kivu Neighbourhood Map</title>
 	<link rel="stylesheet" href="css/style.min.css">
-	<link rel="stylesheet" href="css/responsive.min.css" media="min-width: 480px">
 </head>
 <body>
 	<div id="blueBar" class="loading bar" data-bind="visible: !ready()"></div>
@@ -27,8 +26,7 @@
 			downArrow: onDownArrow,
 			upArrow: onUpArrow,
 			style: {borderColor: searchVM.bar() ? app.colors.blue : app.colors.green},
-			css: {messaging: messaging}">
-		</input>
+			css: {messaging: messaging}"/>
 		<div class="plus-container" data-bind="visible: !searchVM.active(), click: addVM.onButtonClick">
 			<div class="plus-horizontal-bar" data-bind="visible: !addVM.active()"></div>
 			<div class="plus-vertical-bar" data-bind="visible: !addVM.active()"></div>
@@ -41,7 +39,7 @@
 			</div>
 			<div id="list-view" data-bind="visible: active, foreach: matchingLocations">
 				<div class="list-item" data-bind="click: $parent.panToAndOpen, event: { mouseenter: $parent.highlight }, css: {highlighted: highlighted}">
-					<img class="list-item-img" data-bind="visible: isHardcoded, attr: {src: url}">
+					<img class="list-item-img" alt="A picture of the location" data-bind="visible: isHardcoded, attr: {src: url}">
 					<div class="list-item-name" data-bind="text: name"></div>
 				</div>
 			</div>
@@ -55,7 +53,7 @@
 			<a class="wiki-link">Wikipedia</a>
 		</div>
 	</script>
-	<script src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
+	<script async defer src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
 	<script src="bower_components/jquery/dist/jquery.min.js"></script>
 	<script src="bower_components/underscore/underscore-min.js"></script>
 	<script src="bower_components/knockout/dist/knockout.js"></script>

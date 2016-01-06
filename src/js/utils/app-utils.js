@@ -22,11 +22,12 @@ var app = app || {};
 	};
 
 	app.oneLocationTreated = function (isHardcoded) {
+		var locationsTreated;
 		if (isHardcoded) {
-			var locationsTreated = app.hardcodedLocations.treated();
+			locationsTreated = app.hardcodedLocations.treated();
 			app.hardcodedLocations.treated(locationsTreated + 1);
 		} else {
-			var locationsTreated = app.userLocations.treated();
+			locationsTreated = app.userLocations.treated();
 			app.userLocations.treated(locationsTreated + 1);
 		}
 	};

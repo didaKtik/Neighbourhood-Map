@@ -14,7 +14,7 @@ app.AddViewModel = function (viewModel) {
 	this.active = ko.computed(function() {
 		var bar = this.bar(),
 			inputText = this.inputText();
-		return bar && !(inputText == addMessage);
+		return bar && inputText != addMessage;
 	}.bind(this));
 
 	// Toggle add bar or add a new location
