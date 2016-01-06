@@ -16,6 +16,28 @@ This app gives you the possibility to explore places I liked when I visited Rwan
 
 You can also add your own places, but only if they are located in Rwanda!
 
+## Changes
+
+If you desire to make changes you will make your life better if you use gulp to automatically run tasks. If you don't know gulp at all you can visit [this page] (http://www.sitepoint.com/introduction-gulp-js/) for example. Then in the project root folder do the following:
+
+#### 1. Install the node packages you need (already listed in package.json):
+
+```sh
+$ npm install
+```
+
+#### 2. Install gulp globally:
+
+```sh
+$ npm install --global gulp
+```
+
+#### 3. Run the gulp task I defined to make it easier to work on the project (for more details on what it is doing have a look at gulpfile.js):
+
+```sh
+$ gulp athome
+```
+
 ## Context
 
 This project is part of the [Web Developper Front-End Nanodegree] (https://www.udacity.com/course/front-end-web-developer-nanodegree--nd001) at Udacity.
