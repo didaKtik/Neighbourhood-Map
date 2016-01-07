@@ -37,7 +37,6 @@ app.adderModule = function () {
 		var request = { query: location + ' Rwanda'};
 
 		service.textSearch(request, function (results, status) {
-			console.log(status);
 			if (status == google.maps.places.PlacesServiceStatus.OK) {
 				onSuccess(results);
 			} else {

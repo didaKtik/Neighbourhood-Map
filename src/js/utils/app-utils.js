@@ -26,7 +26,7 @@ var app = app || {};
 		if (isHardcoded) {
 			locationsTreated = app.hardcodedLocations.treated();
 			app.hardcodedLocations.treated(locationsTreated + 1);
-		} else {
+		} else if (app.userLocations.length) {
 			locationsTreated = app.userLocations.treated();
 			app.userLocations.treated(locationsTreated + 1);
 		}

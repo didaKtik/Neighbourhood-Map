@@ -95,7 +95,7 @@ a:hover {
 
 /* Hamburger and plus icons */
 .hamburger-container {
-  position: fixed;
+  position: absolute;
   top: 5vh;
   left: calc(50vw - 150px);
   width: 30px;
