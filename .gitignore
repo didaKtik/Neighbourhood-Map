@@ -1,5 +1,9 @@
-node_modules/
+node_modules
 src/img-original
-src/img/*
-src/bower_components
-**/.DS_Store
+
+# A “/“ in the pattern: wildcard does not match “/“
+*/img
+*/bower_components
+
+# No “/“ in the pattern: wildcard matches anything, even “/“
+*.DS_Store
